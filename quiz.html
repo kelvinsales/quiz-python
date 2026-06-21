@@ -753,14 +753,25 @@ async function enviarServidor(payload) {
 }
 
 async function enviarFormspree(payload) {
-  const FORMSPREE_ID = 'xojoadkz'; // substituir após configurar
+  const FORMSPREE_ID = 'xojoadkz';
   try {
+    // Formspree gratuito requer FormData, não JSON
+    const form = new FormData();
+    form.append('nome',        payload.nome);
+    form.append('matricula',   payload.matricula);
+    form.append('data',        payload.data);
+    form.append('tentativas',  payload.totalTentativas);
+    form.append('melhor_nota', payload.melhorNota);
+    payload.tentativas.forEach(t => {
+      form.append(`nota_t${t.numero}`, t.nota);
+    });
     const resp = await fetch(`https://formspree.io/f/${FORMSPREE_ID}`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      headers: { 'Accept': 'application/json' },
+      body: form
     });
-    return resp.ok;
+    const data = await resp.json();
+    return resp.ok && data.ok !== false;
   } catch(e) {
     console.warn('Erro ao enviar para Formspree:', e);
     return false;
