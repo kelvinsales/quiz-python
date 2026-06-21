@@ -339,6 +339,259 @@ const QUESTOES = {
       })
     },
 
-  ]
+    {
+      id: "laco03",
+      tipo: "erro",
+      parametros: () => {
+        const n = [3, 4, 5][Math.floor(Math.random()*3)];
+        return { n };
+      },
+      gerar: (p) => ({
+        enunciado: `Um programa deve ler ${p.n} produtos e mostrar o preço de cada um dentro do laço.`,
+        pergunta: "O código abaixo tem um erro. Qual é o problema?",
+        codigo: `for i in range(${p.n}):\n    preco = float(input("Preço do produto " + str(i+1) + ": "))\n\nprint("Preço:", preco)`,
+        alternativas: [
+          `range(${p.n}) não funciona com float`,
+          "O print está fora do laço — só mostra o último preço",
+          "A variável preco deveria se chamar valor",
+          "Falta um else após o for"
+        ],
+        correta: 1,
+        gabarito: `O <code>print</code> está fora do laço (sem indentação). Por isso executa apenas uma vez, depois que o laço termina, mostrando só o último preço digitado.`
+      })
+    },
+
+    {
+      id: "laco04",
+      tipo: "completar",
+      parametros: () => {
+        const n = [3, 5, 4][Math.floor(Math.random()*3)];
+        return { n };
+      },
+      gerar: (p) => ({
+        enunciado: `Uma escola quer calcular a média das notas de ${p.n} alunos. O programa lê cada nota dentro de um laço e calcula a média ao final.`,
+        pergunta: "Complete o trecho que acumula as notas:",
+        codigo: `soma = 0\nfor i in range(${p.n}):\n    nota = float(input("Nota: "))\n    soma = ___\n\nmedia = soma / ${p.n}\nprint("Média:", media)`,
+        lacuna: "___",
+        alternativas: [
+          "nota",
+          "soma + nota",
+          "soma * nota",
+          "media + nota"
+        ],
+        correta: 1,
+        gabarito: `Para acumular valores, somamos o total anterior com o novo valor: <code>soma = soma + nota</code>. Só atribuir <code>nota</code> perderia os valores anteriores.`
+      })
+    },
+
+    {
+      id: "laco05",
+      tipo: "identificar",
+      parametros: () => {
+        const n = [3, 4, 5][Math.floor(Math.random()*3)];
+        return { n };
+      },
+      gerar: (p) => ({
+        enunciado: `Um programa deve mostrar a tabuada de um número digitado pelo usuário, de 1 até ${p.n}.`,
+        pergunta: "Quais são as entradas e a saída desse programa?",
+        codigo: `numero = int(input("Digite um número: "))\n\nfor i in range(1, ${p.n+1}):\n    print(numero, "x", i, "=", numero * i)`,
+        alternativas: [
+          `Entrada: número e i. Saída: os ${p.n} resultados da tabuada`,
+          "Entrada: apenas o número digitado. Saída: os resultados da tabuada",
+          `Entrada: número e ${p.n}. Saída: apenas o último resultado`,
+          "Entrada: nenhuma. Saída: a tabuada completa"
+        ],
+        correta: 1,
+        gabarito: `Só o <code>numero</code> vem do usuário via <code>input()</code>. O <code>i</code> é gerado automaticamente pelo <code>range</code> — não é uma entrada. A saída são todos os resultados impressos dentro do laço.`
+      })
+    },
+
+  ],
+
+  // =====================================================
+  // NOVAS QUESTÕES SEQUENCIAL (seq08 a seq11)
+  // =====================================================
 
 };
+
+QUESTOES.sequencial.push(
+
+    {
+      id: "seq08",
+      tipo: "completar",
+      parametros: () => {
+        const desc = [5, 10, 15, 20][Math.floor(Math.random()*4)];
+        const preco = [50, 100, 200, 150][Math.floor(Math.random()*4)];
+        return { desc, preco, resultado: (preco * desc / 100).toFixed(2) };
+      },
+      gerar: (p) => ({
+        enunciado: `Uma loja quer calcular o valor do desconto de ${p.desc}% sobre o preço de um produto digitado pelo cliente.`,
+        pergunta: "Complete o cálculo do desconto:",
+        codigo: `preco = float(input("Preço do produto: "))\n\ndesconto = preco * ___\n\nprint("Desconto: R$", desconto)`,
+        lacuna: "___",
+        alternativas: [
+          `${p.desc}`,
+          `${p.desc / 100}`,
+          `${p.desc} / preco`,
+          `preco / ${p.desc}`
+        ],
+        correta: 1,
+        gabarito: `Para calcular ${p.desc}% do preço, multiplicamos por <code>${p.desc / 100}</code> (que é ${p.desc} ÷ 100). Multiplicar por ${p.desc} daria um valor ${p.desc}x maior que o preço.`
+      })
+    },
+
+    {
+      id: "seq09",
+      tipo: "identificar",
+      parametros: () => {
+        const peso = [60, 70, 80, 90][Math.floor(Math.random()*4)];
+        const alt  = [1.60, 1.70, 1.75, 1.80][Math.floor(Math.random()*4)];
+        return { peso, alt, imc: (peso / (alt * alt)).toFixed(1) };
+      },
+      gerar: (p) => ({
+        enunciado: `Um programa calcula o IMC de uma pessoa. O usuário digita o peso em kg e a altura em metros. A fórmula é: IMC = peso / (altura × altura).`,
+        pergunta: "Qual é o processamento desse problema?",
+        codigo: `peso = float(input("Peso (kg): "))\naltura = float(input("Altura (m): "))\n\nimc = peso / (altura * altura)\n\nprint("IMC:", imc)`,
+        alternativas: [
+          "Ler o peso e a altura do usuário",
+          "Mostrar o IMC na tela",
+          "Calcular o IMC dividindo o peso pela altura ao quadrado",
+          "Verificar se o IMC é normal ou não"
+        ],
+        correta: 2,
+        gabarito: `O processamento é o cálculo: <code>imc = peso / (altura * altura)</code>. A leitura é entrada, o print é saída. O programa não verifica se o IMC é normal — isso seria uma condicional.`
+      })
+    },
+
+    {
+      id: "seq10",
+      tipo: "erro",
+      parametros: () => {
+        const n1 = [5, 7, 8][Math.floor(Math.random()*3)];
+        const n2 = [3, 4, 6][Math.floor(Math.random()*3)];
+        return { n1, n2, soma: n1 + n2 };
+      },
+      gerar: (p) => ({
+        enunciado: `Um programa deve ler dois números inteiros digitados pelo usuário e mostrar a soma deles.`,
+        pergunta: "O código abaixo tem um erro. Qual é o problema?",
+        codigo: `n1 = int(input("Primeiro número: "))\nn2 = int(input("Segundo número: "))\n\nprint("Soma:", n1 + n2)\nn3 = n1 + n2`,
+        alternativas: [
+          "int() não funciona com input()",
+          "Não é possível somar dentro do print()",
+          "A variável n3 é calculada depois do print — o resultado não aparece na tela",
+          "Falta converter n3 para string antes de imprimir"
+        ],
+        correta: 2,
+        gabarito: `O <code>print</code> mostra <code>n1 + n2</code> diretamente — isso funciona. Mas a variável <code>n3</code> é criada depois do print e nunca é usada. O erro lógico é guardar o resultado numa variável que não serve para nada nesse código.`
+      })
+    },
+
+    {
+      id: "seq11",
+      tipo: "completar",
+      parametros: () => {
+        const horas = [8, 6, 7, 9][Math.floor(Math.random()*4)];
+        const valor = [15, 20, 25, 18][Math.floor(Math.random()*4)];
+        return { horas, valor, total: horas * valor };
+      },
+      gerar: (p) => ({
+        enunciado: `Um freelancer cobra R$ ${p.valor} por hora de trabalho. O programa lê quantas horas ele trabalhou e calcula o valor a receber.`,
+        pergunta: "Complete o código:",
+        codigo: `valor_hora = ${p.valor}\nhoras = int(input("Horas trabalhadas: "))\n\ntotal = ___\n\nprint("Total a receber: R$", total)`,
+        lacuna: "___",
+        alternativas: [
+          "valor_hora + horas",
+          "horas / valor_hora",
+          "valor_hora * horas",
+          "total * horas"
+        ],
+        correta: 2,
+        gabarito: `O enunciado diz que o freelancer ganha R$ ${p.valor} por hora. O total é a quantidade de horas multiplicada pelo valor da hora: <code>valor_hora * horas</code>.`
+      })
+    }
+
+);
+
+QUESTOES.condicional.push(
+
+    {
+      id: "cond07",
+      tipo: "completar",
+      parametros: () => {
+        const min = [5, 6, 7][Math.floor(Math.random()*3)];
+        return { min };
+      },
+      gerar: (p) => ({
+        enunciado: `Um sistema de escola verifica se um aluno está aprovado. Para isso, a média precisa ser maior ou igual a ${p.min} E o aluno não pode ter mais de 25% de faltas.`,
+        pergunta: "Complete a condição corretamente:",
+        codigo: `media = float(input("Média: "))\nfaltas = float(input("% de faltas: "))\n\nif media >= ${p.min} ___ faltas <= 25:\n    print("Aprovado")\nelse:\n    print("Reprovado")`,
+        lacuna: "___",
+        alternativas: ["or", "not", "and", "+"],
+        correta: 2,
+        gabarito: `As duas condições precisam ser verdadeiras ao mesmo tempo — média suficiente E faltas dentro do limite. Para isso usamos <code>and</code>. Com <code>or</code>, bastaria uma delas ser verdadeira.`
+      })
+    },
+
+    {
+      id: "cond08",
+      tipo: "identificar",
+      parametros: () => {
+        const turno = ["manhã", "tarde", "noite"][Math.floor(Math.random()*3)];
+        return { turno };
+      },
+      gerar: (p) => ({
+        enunciado: `Um programa lê a hora atual e exibe uma saudação: "Bom dia" para horários entre 6 e 12, "Boa tarde" entre 12 e 18, e "Boa noite" para os demais.`,
+        pergunta: "Onde a condicional atua nesse problema?",
+        codigo: `hora = int(input("Hora atual: "))\n\nif hora >= 6 and hora < 12:\n    print("Bom dia!")\nelif hora >= 12 and hora < 18:\n    print("Boa tarde!")\nelse:\n    print("Boa noite!")`,
+        alternativas: [
+          "Na entrada — decide o que o usuário digita",
+          "No processamento — calcula a hora correta",
+          "Na saída — decide qual mensagem será exibida com base na hora",
+          "Em nenhum lugar — o programa não tem condicional"
+        ],
+        correta: 2,
+        gabarito: `A condicional atua na saída: dependendo da hora digitada, o programa decide qual mensagem mostrar. Não há cálculo — a hora é lida diretamente e comparada.`
+      })
+    },
+
+    {
+      id: "cond09",
+      tipo: "erro",
+      parametros: () => {
+        const val = [100, 200, 500][Math.floor(Math.random()*3)];
+        return { val };
+      },
+      gerar: (p) => ({
+        enunciado: `Um caixa eletrônico verifica se o saldo é suficiente para um saque. O usuário digita o saldo e o valor do saque.`,
+        pergunta: "O código tem um erro lógico. Qual é o problema?",
+        codigo: `saldo = float(input("Saldo: "))\nsaque = float(input("Valor do saque: "))\n\nif saque > saldo:\n    print("Saque realizado!")\nelse:\n    print("Saldo insuficiente")`,
+        alternativas: [
+          "float() não deveria ser usado para valores monetários",
+          "A condição está invertida — saque só é possível se saldo >= saque",
+          "Falta um elif para quando os valores são iguais",
+          "O else deveria ser elif"
+        ],
+        correta: 1,
+        gabarito: `A condição está ao contrário: <code>saque > saldo</code> libera o saque quando ele é maior que o saldo — o oposto do correto. Deveria ser <code>saldo >= saque</code> para permitir o saque apenas quando há saldo suficiente.`
+      })
+    },
+
+    {
+      id: "cond10",
+      tipo: "completar",
+      parametros: () => {
+        const ano = [2024, 2023, 2022, 2025][Math.floor(Math.random()*4)];
+        return { ano };
+      },
+      gerar: (p) => ({
+        enunciado: `Um programa verifica se um ano é bissexto. Um ano é bissexto se for divisível por 4. O operador de resto em Python é %.`,
+        pergunta: "Complete a condição:",
+        codigo: `ano = int(input("Digite o ano: "))\n\nif ano ___ 4 == 0:\n    print("Ano bissexto")\nelse:\n    print("Não é bissexto")`,
+        lacuna: "___",
+        alternativas: ["/", "//", "%", "*"],
+        correta: 2,
+        gabarito: `O operador <code>%</code> retorna o resto da divisão. Se <code>ano % 4 == 0</code>, o resto é zero — ou seja, o ano é divisível por 4 e portanto bissexto.`
+      })
+    }
+
+);
