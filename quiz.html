@@ -449,6 +449,32 @@ const estado = {
 estado.emCasa = !(location.hostname === 'localhost' || location.hostname === '127.0.0.1' || /^192\.168\./.test(location.hostname) || /^10\./.test(location.hostname));
 
 // =====================================================
+// PRAZO PARA USO EM CASA
+// Atualize a data após cada aula: 'YYYY-MM-DDTHH:MM'
+// =====================================================
+const PRAZO_CASA = '2026-06-22T23:59';
+
+function verificarPrazo() {
+  if (!estado.emCasa) return true;
+  const agora = new Date();
+  const prazo = new Date(PRAZO_CASA);
+  if (agora > prazo) {
+    document.getElementById('tela-entrada').innerHTML = `
+      <div style="text-align:center; padding:2rem 0;">
+        <div style="font-size:48px; margin-bottom:1rem;">⏰</div>
+        <div style="font-size:18px; font-weight:700; margin-bottom:8px;">Prazo encerrado</div>
+        <div style="font-size:14px; color:var(--cinza-600); line-height:1.6;">
+          O prazo para envio era até<br>
+          <strong>${prazo.toLocaleDateString('pt-BR')} às ${prazo.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'})}</strong>.<br><br>
+          Fale com seu professor.
+        </div>
+      </div>`;
+    return false;
+  }
+  return true;
+}
+
+// =====================================================
 // UTILITÁRIOS
 // =====================================================
 function mostrarTela(id) {
@@ -523,12 +549,16 @@ document.getElementById('btn-comecar').addEventListener('click', () => {
   const nome = document.getElementById('input-nome').value.trim();
   const mat  = document.getElementById('input-matricula').value.trim();
   if (!nome || !mat) { alert('Preencha nome e matrícula para continuar.'); return; }
+  if (!verificarPrazo()) return;
   estado.nome = nome;
   estado.matricula = mat;
   estado.iniciado = new Date();
   iniciarCronometro();
   iniciarTentativa();
 });
+
+// Verificar prazo ao carregar a página (modo casa)
+window.addEventListener('load', () => { if (estado.emCasa) verificarPrazo(); });
 
 function iniciarTentativa() {
   estado.tentativaAtual++;
@@ -651,6 +681,8 @@ function finalizarTentativa() {
   const acertos = estado.respostasSelecionadas.filter(r => r.acertou).length;
   const nota = (acertos / estado.questoesPorTentativa) * 10;
   registrarTentativa(nota);
+  // Envio parcial automático ao final de cada tentativa (modo casa)
+  if (estado.emCasa) enviarParcialFormspree();
   mostrarResultado(acertos, nota);
 }
 
@@ -752,32 +784,60 @@ async function enviarServidor(payload) {
   }
 }
 
+function montarFormData(payload, status) {
+  const form = new FormData();
+  // Ordem dos campos no Formspree
+  form.append('data_envio',       payload.data);
+  form.append('nome',             payload.nome);
+  form.append('matricula',        payload.matricula);
+  form.append('status',           status); // 'parcial' ou 'final'
+  form.append('melhor_nota',      payload.melhorNota);
+  form.append('total_tentativas', payload.totalTentativas);
+  for (let i = 1; i <= 3; i++) {
+    const t = payload.tentativas.find(t => t.numero === i);
+    form.append(`nota_t${i}`,    t ? t.nota    : '—');
+    form.append(`acertos_t${i}`, t ? `${t.acertos}/5` : '—');
+  }
+  return form;
+}
+
 async function enviarFormspree(payload) {
   const FORMSPREE_ID = 'xojoadkz';
   try {
-    // Formspree gratuito requer FormData, não JSON
-    const form = new FormData();
-    form.append('nome',             payload.nome);
-    form.append('matricula',        payload.matricula);
-    form.append('data_envio',       payload.data);
-    form.append('total_tentativas', payload.totalTentativas);
-    form.append('melhor_nota',      payload.melhorNota);
-    // Tentativas como colunas separadas, não JSON
-    for (let i = 1; i <= 3; i++) {
-      const t = payload.tentativas.find(t => t.numero === i);
-      form.append(`nota_t${i}`, t ? t.nota : '—');
-      form.append(`acertos_t${i}`, t ? `${t.acertos}/5` : '—');
-    }
     const resp = await fetch(`https://formspree.io/f/${FORMSPREE_ID}`, {
       method: 'POST',
       headers: { 'Accept': 'application/json' },
-      body: form
+      body: montarFormData(payload, 'final')
     });
     const data = await resp.json();
     return resp.ok && data.ok !== false;
   } catch(e) {
     console.warn('Erro ao enviar para Formspree:', e);
     return false;
+  }
+}
+
+async function enviarParcialFormspree() {
+  const FORMSPREE_ID = 'xojoadkz';
+  try {
+    const melhorNota = Math.max(...estado.tentativas.map(t => t.nota));
+    const payload = {
+      nome: estado.nome,
+      matricula: estado.matricula,
+      data: new Date().toLocaleString('pt-BR'),
+      totalTentativas: estado.tentativas.length,
+      melhorNota: melhorNota.toFixed(1),
+      tentativas: estado.tentativas.map(t => ({
+        numero: t.numero, acertos: t.acertos, nota: t.nota.toFixed(1)
+      }))
+    };
+    await fetch(`https://formspree.io/f/${FORMSPREE_ID}`, {
+      method: 'POST',
+      headers: { 'Accept': 'application/json' },
+      body: montarFormData(payload, 'parcial')
+    });
+  } catch(e) {
+    console.warn('Envio parcial falhou:', e);
   }
 }
 
