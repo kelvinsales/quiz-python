@@ -757,14 +757,17 @@ async function enviarFormspree(payload) {
   try {
     // Formspree gratuito requer FormData, não JSON
     const form = new FormData();
-    form.append('nome',        payload.nome);
-    form.append('matricula',   payload.matricula);
-    form.append('data',        payload.data);
-    form.append('tentativas',  payload.totalTentativas);
-    form.append('melhor_nota', payload.melhorNota);
-    payload.tentativas.forEach(t => {
-      form.append(`nota_t${t.numero}`, t.nota);
-    });
+    form.append('nome',             payload.nome);
+    form.append('matricula',        payload.matricula);
+    form.append('data_envio',       payload.data);
+    form.append('total_tentativas', payload.totalTentativas);
+    form.append('melhor_nota',      payload.melhorNota);
+    // Tentativas como colunas separadas, não JSON
+    for (let i = 1; i <= 3; i++) {
+      const t = payload.tentativas.find(t => t.numero === i);
+      form.append(`nota_t${i}`, t ? t.nota : '—');
+      form.append(`acertos_t${i}`, t ? `${t.acertos}/5` : '—');
+    }
     const resp = await fetch(`https://formspree.io/f/${FORMSPREE_ID}`, {
       method: 'POST',
       headers: { 'Accept': 'application/json' },
