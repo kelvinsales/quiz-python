@@ -784,41 +784,31 @@ async function enviarServidor(payload) {
   }
 }
 
-function montarFormData(payload, status) {
-  const form = new FormData();
-  // Ordem dos campos no Formspree
-  form.append('data_envio',       payload.data);
-  form.append('nome',             payload.nome);
-  form.append('matricula',        payload.matricula);
-  form.append('status',           status); // 'parcial' ou 'final'
-  form.append('melhor_nota',      payload.melhorNota);
-  form.append('total_tentativas', payload.totalTentativas);
-  for (let i = 1; i <= 3; i++) {
-    const t = payload.tentativas.find(t => t.numero === i);
-    form.append(`nota_t${i}`,    t ? t.nota    : '—');
-    form.append(`acertos_t${i}`, t ? `${t.acertos}/5` : '—');
-  }
-  return form;
+// =====================================================
+// ENVIO PARA GOOGLE SHEETS
+// Cole a URL do seu Apps Script abaixo após publicar
+// =====================================================
+const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbwKMQ-5veZkwCrttv8n4RCqKsUGZAr5bc9C6L4TsrYc6sdfMyizAr0TeXWLBRr_6hxk/exec';
+
+function montarPayload(payload, status) {
+  return JSON.stringify({ ...payload, status });
 }
 
 async function enviarFormspree(payload) {
-  const FORMSPREE_ID = 'xojoadkz';
   try {
-    const resp = await fetch(`https://formspree.io/f/${FORMSPREE_ID}`, {
+    const resp = await fetch(SHEETS_URL, {
       method: 'POST',
-      headers: { 'Accept': 'application/json' },
-      body: montarFormData(payload, 'final')
+      body: montarPayload(payload, 'final')
     });
     const data = await resp.json();
-    return resp.ok && data.ok !== false;
+    return data.ok === true;
   } catch(e) {
-    console.warn('Erro ao enviar para Formspree:', e);
+    console.warn('Erro ao enviar para Google Sheets:', e);
     return false;
   }
 }
 
 async function enviarParcialFormspree() {
-  const FORMSPREE_ID = 'xojoadkz';
   try {
     const melhorNota = Math.max(...estado.tentativas.map(t => t.nota));
     const payload = {
@@ -831,10 +821,9 @@ async function enviarParcialFormspree() {
         numero: t.numero, acertos: t.acertos, nota: t.nota.toFixed(1)
       }))
     };
-    await fetch(`https://formspree.io/f/${FORMSPREE_ID}`, {
+    await fetch(SHEETS_URL, {
       method: 'POST',
-      headers: { 'Accept': 'application/json' },
-      body: montarFormData(payload, 'parcial')
+      body: montarPayload(payload, 'parcial')
     });
   } catch(e) {
     console.warn('Envio parcial falhou:', e);
