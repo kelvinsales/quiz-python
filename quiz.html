@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz de Python — Introdução à Informática</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --azul: #2563EB;
+    --azul-claro: #EFF6FF;
+    --azul-escuro: #1E40AF;
+    --verde: #16A34A;
+    --verde-claro: #F0FDF4;
+    --vermelho: #DC2626;
+    --vermelho-claro: #FEF2F2;
+    --amarelo: #D97706;
+    --amarelo-claro: #FFFBEB;
+    --cinza-100: #F3F4F6;
+    --cinza-200: #E5E7EB;
+    --cinza-400: #9CA3AF;
+    --cinza-600: #4B5563;
+    --cinza-900: #111827;
+    --fonte: 'Segoe UI', system-ui, sans-serif;
+    --mono: 'Consolas', 'Courier New', monospace;
+    --raio: 10px;
+    --sombra: 0 2px 12px rgba(0,0,0,0.08);
+  }
+
+  body {
+    font-family: var(--fonte);
+    background: var(--cinza-100);
+    color: var(--cinza-900);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem 1rem;
+  }
+
+  .topo {
+    width: 100%;
+    max-width: 640px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .topo-titulo {
+    font-size: 13px;
+    color: var(--cinza-600);
+    line-height: 1.4;
+  }
+
+  .topo-titulo strong {
+    display: block;
+    font-size: 15px;
+    color: var(--cinza-900);
+    font-weight: 600;
+  }
+
+  .cronometro {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: white;
+    border: 1.5px solid var(--cinza-200);
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--cinza-900);
+    font-family: var(--mono);
+  }
+
+  .cronometro.aviso { border-color: var(--amarelo); color: var(--amarelo); }
+  .cronometro.critico { border-color: var(--vermelho); color: var(--vermelho); animation: pisca 1s infinite; }
+
+  @keyframes pisca { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+  .card {
+    background: white;
+    border-radius: 14px;
+    box-shadow: var(--sombra);
+    width: 100%;
+    max-width: 640px;
+    padding: 2rem;
+  }
+
+  /* ---- TELA INICIAL ---- */
+  .entrada-icone {
+    width: 56px; height: 56px;
+    background: var(--azul-claro);
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px;
+    margin: 0 auto 1.25rem;
+  }
+
+  .entrada-titulo {
+    text-align: center;
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .entrada-sub {
+    text-align: center;
+    font-size: 13px;
+    color: var(--cinza-600);
+    margin-bottom: 1.75rem;
+  }
+
+  .campo { margin-bottom: 1rem; }
+  .campo label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 5px; color: var(--cinza-600); }
+  .campo input {
+    width: 100%; padding: 10px 12px;
+    border: 1.5px solid var(--cinza-200);
+    border-radius: var(--raio);
+    font-size: 15px;
+    font-family: var(--fonte);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .campo input:focus { border-color: var(--azul); }
+
+  .info-box {
+    background: var(--azul-claro);
+    border-radius: var(--raio);
+    padding: 14px 16px;
+    margin: 1.25rem 0;
+  }
+
+  .info-linha {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 13px; color: var(--azul-escuro);
+    padding: 4px 0;
+  }
+
+  .info-linha span.ic { font-size: 16px; }
+
+  /* ---- BOTÕES ---- */
+  .btn {
+    width: 100%; padding: 12px;
+    border: none; border-radius: var(--raio);
+    font-size: 15px; font-weight: 600;
+    cursor: pointer; transition: all 0.15s;
+  }
+
+  .btn-primario { background: var(--azul); color: white; }
+  .btn-primario:hover { background: var(--azul-escuro); }
+  .btn-primario:disabled { background: var(--cinza-400); cursor: not-allowed; }
+
+  .btn-secundario {
+    background: white; color: var(--azul);
+    border: 1.5px solid var(--azul);
+  }
+  .btn-secundario:hover { background: var(--azul-claro); }
+
+  .btn-verde { background: var(--verde); color: white; }
+  .btn-verde:hover { background: #15803D; }
+
+  /* ---- QUIZ ---- */
+  .quiz-header {
+    display: flex; justify-content: space-between;
+    align-items: center; margin-bottom: 1.25rem;
+  }
+
+  .badge {
+    font-size: 12px; font-weight: 600; padding: 4px 10px;
+    border-radius: 999px;
+  }
+  .badge-azul { background: var(--azul-claro); color: var(--azul-escuro); }
+  .badge-cinza { background: var(--cinza-100); color: var(--cinza-600); }
+
+  .barra-container { margin-bottom: 1.5rem; }
+  .barra-labels { display: flex; justify-content: space-between; font-size: 12px; color: var(--cinza-400); margin-bottom: 5px; }
+  .barra { height: 5px; background: var(--cinza-200); border-radius: 999px; overflow: hidden; }
+  .barra-fill { height: 100%; background: var(--azul); border-radius: 999px; transition: width 0.4s; }
+
+  .enunciado-box {
+    background: var(--azul-claro);
+    border-left: 3px solid var(--azul);
+    border-radius: 0 var(--raio) var(--raio) 0;
+    padding: 12px 14px;
+    font-size: 14px;
+    line-height: 1.65;
+    color: var(--azul-escuro);
+    margin-bottom: 1.25rem;
+  }
+
+  .pergunta-texto {
+    font-size: 15px; font-weight: 600;
+    margin-bottom: 1rem;
+    line-height: 1.5;
+  }
+
+  .codigo-box {
+    background: #1E293B;
+    color: #E2E8F0;
+    border-radius: var(--raio);
+    padding: 14px 16px;
+    font-family: var(--mono);
+    font-size: 13.5px;
+    line-height: 1.9;
+    margin-bottom: 1.25rem;
+    white-space: pre;
+    overflow-x: auto;
+  }
+
+  .lacuna {
+    background: rgba(96,165,250,0.25);
+    border-bottom: 2px solid #60A5FA;
+    padding: 0 6px;
+    border-radius: 3px;
+    color: #93C5FD;
+    font-weight: 700;
+  }
+
+  .opcoes { display: flex; flex-direction: column; gap: 8px; margin-bottom: 1.5rem; }
+
+  .opcao {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 14px;
+    border: 1.5px solid var(--cinza-200);
+    border-radius: var(--raio);
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .opcao:hover { border-color: var(--azul); background: var(--azul-claro); }
+  .opcao.selecionada { border-color: var(--azul); background: var(--azul-claro); }
+  .opcao.correta { border-color: var(--verde); background: var(--verde-claro); }
+  .opcao.errada { border-color: var(--vermelho); background: var(--vermelho-claro); }
+
+  .opcao-letra {
+    width: 30px; height: 30px; flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--cinza-100);
+    border: 1.5px solid var(--cinza-200);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700;
+    color: var(--cinza-600);
+    transition: all 0.15s;
+  }
+  .opcao.selecionada .opcao-letra { background: var(--azul); color: white; border-color: var(--azul); }
+  .opcao.correta .opcao-letra { background: var(--verde); color: white; border-color: var(--verde); }
+  .opcao.errada .opcao-letra { background: var(--vermelho); color: white; border-color: var(--vermelho); }
+
+  .opcao-texto { font-size: 14px; font-family: var(--mono); }
+
+  .gabarito-box {
+    border-radius: var(--raio);
+    padding: 12px 14px;
+    font-size: 13.5px;
+    line-height: 1.6;
+    margin-bottom: 1.25rem;
+    display: none;
+  }
+  .gabarito-box.certo { background: var(--verde-claro); border: 1px solid #86EFAC; color: #15803D; }
+  .gabarito-box.errado { background: var(--vermelho-claro); border: 1px solid #FCA5A5; color: #B91C1C; }
+  .gabarito-box .titulo-gab { font-weight: 700; margin-bottom: 4px; }
+  .gabarito-box code { background: rgba(0,0,0,0.08); padding: 1px 5px; border-radius: 4px; font-family: var(--mono); }
+
+  .nav-pontos { display: flex; gap: 6px; }
+  .ponto {
+    height: 8px; border-radius: 999px;
+    background: var(--cinza-200);
+    transition: all 0.3s;
+    width: 8px;
+  }
+  .ponto.feito { background: var(--azul); }
+  .ponto.atual { background: var(--azul); width: 22px; }
+
+  /* ---- RESULTADO ---- */
+  .resultado-nota {
+    text-align: center; padding: 2rem 0 1.5rem;
+  }
+  .nota-numero {
+    font-size: 64px; font-weight: 800; line-height: 1;
+    color: var(--azul);
+  }
+  .nota-max { font-size: 18px; color: var(--cinza-400); }
+  .nota-label { font-size: 14px; color: var(--cinza-600); margin-top: 6px; }
+
+  .tabela-tentativas {
+    width: 100%; border-collapse: collapse;
+    font-size: 14px; margin: 1.25rem 0;
+  }
+  .tabela-tentativas th {
+    text-align: left; padding: 8px 12px;
+    background: var(--cinza-100);
+    color: var(--cinza-600);
+    font-size: 12px; font-weight: 600;
+    border-bottom: 1px solid var(--cinza-200);
+  }
+  .tabela-tentativas td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--cinza-100);
+  }
+  .tabela-tentativas tr.melhor td { font-weight: 700; color: var(--azul); }
+
+  .btn-group { display: flex; flex-direction: column; gap: 10px; margin-top: 1.5rem; }
+
+  /* ---- TELA ENCERRADO ---- */
+  .encerrado-centro { text-align: center; padding: 1.5rem 0; }
+  .encerrado-icone { font-size: 52px; margin-bottom: 1rem; }
+  .encerrado-titulo { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+  .encerrado-sub { font-size: 14px; color: var(--cinza-600); line-height: 1.6; }
+
+  .screen { display: none; }
+  .screen.ativa { display: block; }
+</style>
+</head>
+<body>
+
+<div class="topo">
+  <div class="topo-titulo">
+    <strong>Introdução à Informática</strong>
+    Curso Técnico Integrado em Telecom
+  </div>
+  <div class="cronometro" id="cronometro" style="display:none;">
+    ⏱ <span id="tempo-display">60:00</span>
+  </div>
+</div>
+
+<!-- TELA 1: ENTRADA -->
+<div class="card screen ativa" id="tela-entrada">
+  <div class="entrada-icone">🐍</div>
+  <div class="entrada-titulo">Quiz de Python</div>
+  <div class="entrada-sub">Lógica de Programação</div>
+
+  <div class="campo">
+    <label>Nome completo</label>
+    <input type="text" id="input-nome" placeholder="Ex: João Silva" autocomplete="off" />
+  </div>
+
+  <div class="campo">
+    <label>Matrícula</label>
+    <input type="text" id="input-matricula" placeholder="Ex: 2024001" autocomplete="off" />
+  </div>
+
+  <div class="info-box">
+    <div class="info-linha"><span class="ic">📝</span> 5 questões por tentativa</div>
+    <div class="info-linha"><span class="ic">🔄</span> Até 3 tentativas com questões diferentes</div>
+    <div class="info-linha"><span class="ic">🏆</span> Sua maior nota será registrada</div>
+    <div class="info-linha"><span class="ic">⏱</span> 60 minutos para as tentativas na escola</div>
+  </div>
+
+  <button class="btn btn-primario" id="btn-comecar">Começar quiz →</button>
+</div>
+
+<!-- TELA 2: QUESTÃO -->
+<div class="card screen" id="tela-questao">
+  <div class="quiz-header">
+    <div>
+      <span class="badge badge-azul" id="badge-tentativa">Tentativa 1 de 3</span>
+    </div>
+    <span class="badge badge-cinza" id="badge-questao">Questão 1 de 5</span>
+  </div>
+
+  <div class="barra-container">
+    <div class="barra-labels">
+      <span id="barra-label">0 de 5 respondidas</span>
+      <span id="melhor-nota-label"></span>
+    </div>
+    <div class="barra"><div class="barra-fill" id="barra-fill" style="width:0%"></div></div>
+  </div>
+
+  <div class="enunciado-box" id="enunciado"></div>
+  <div class="pergunta-texto" id="pergunta"></div>
+  <div class="codigo-box" id="codigo"></div>
+  <div class="opcoes" id="opcoes"></div>
+
+  <div class="gabarito-box" id="gabarito-box">
+    <div class="titulo-gab" id="gabarito-titulo"></div>
+    <div id="gabarito-texto"></div>
+  </div>
+
+  <div style="display:flex; justify-content:space-between; align-items:center;">
+    <div class="nav-pontos" id="nav-pontos"></div>
+    <button class="btn btn-primario" id="btn-proximo" style="width:auto; padding: 10px 20px;" disabled>
+      Confirmar
+    </button>
+  </div>
+</div>
+
+<!-- TELA 3: RESULTADO DA TENTATIVA -->
+<div class="card screen" id="tela-resultado">
+  <div class="resultado-nota">
+    <div class="nota-numero" id="nota-atual">0</div>
+    <div class="nota-max">/ 10</div>
+    <div class="nota-label" id="nota-label">Tentativa 1</div>
+  </div>
+
+  <table class="tabela-tentativas" id="tabela-tentativas">
+    <thead>
+      <tr>
+        <th>Tentativa</th>
+        <th>Acertos</th>
+        <th>Nota</th>
+      </tr>
+    </thead>
+    <tbody id="tbody-tentativas"></tbody>
+  </table>
+
+  <div class="btn-group" id="btns-resultado"></div>
+</div>
+
+<!-- TELA 4: ENCERRADO -->
+<div class="card screen" id="tela-encerrado">
+  <div class="encerrado-centro">
+    <div class="encerrado-icone">✅</div>
+    <div class="encerrado-titulo">Quiz encerrado!</div>
+    <div class="encerrado-sub" id="encerrado-msg"></div>
+  </div>
+  <div style="margin-top:1.5rem;" id="encerrado-tabela"></div>
+</div>
+
+<script src="questoes.js"></script>
+<script>
+// =====================================================
+// ESTADO GLOBAL
+// =====================================================
+const estado = {
+  nome: '',
+  matricula: '',
+  tentativaAtual: 0,
+  maxTentativas: 3,
+  questoesPorTentativa: 5,
+  distribuicao: { sequencial: 3, condicional: 2, laco: 1 },
+  tentativas: [],          // [{acertos, nota, respostas:[]}]
+  questoesAtuais: [],      // questões desta tentativa
+  questaoIdx: 0,
+  respostasSelecionadas: [],
+  respondida: false,
+  questoesUsadas: { sequencial: [], condicional: [], laco: [] },
+  temporizadorId: null,
+  segundosRestantes: 60 * 60,
+  emCasa: false,
+  iniciado: null,
+};
+
+// =====================================================
+// DETECÇÃO: escola (localhost) ou casa (github)
+// =====================================================
+estado.emCasa = !(location.hostname === 'localhost' || location.hostname === '127.0.0.1' || /^192\.168\./.test(location.hostname) || /^10\./.test(location.hostname));
+
+// =====================================================
+// UTILITÁRIOS
+// =====================================================
+function mostrarTela(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('ativa'));
+  document.getElementById(id).classList.add('ativa');
+}
+
+function embaralhar(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function sortearSemRepetir(pool, usadas, n) {
+  const disponiveis = pool.filter(q => !usadas.includes(q.id));
+  const escolhidas = embaralhar(disponiveis).slice(0, n);
+  escolhidas.forEach(q => usadas.push(q.id));
+  return escolhidas;
+}
+
+function gerarQuestoesTentativa() {
+  const seq  = sortearSemRepetir(QUESTOES.sequencial,  estado.questoesUsadas.sequencial,  estado.distribuicao.sequencial);
+  const cond = sortearSemRepetir(QUESTOES.condicional, estado.questoesUsadas.condicional, estado.distribuicao.condicional);
+  const lac  = sortearSemRepetir(QUESTOES.laco,        estado.questoesUsadas.laco,        estado.distribuicao.laco);
+  return embaralhar([...seq, ...cond, ...lac]).map(q => {
+    const params = q.parametros();
+    return { id: q.id, ...q.gerar(params) };
+  });
+}
+
+// =====================================================
+// CRONÔMETRO (apenas na escola)
+// =====================================================
+function iniciarCronometro() {
+  if (estado.emCasa) return;
+  document.getElementById('cronometro').style.display = 'flex';
+  estado.temporizadorId = setInterval(() => {
+    estado.segundosRestantes--;
+    atualizarDisplay();
+    if (estado.segundosRestantes <= 0) {
+      clearInterval(estado.temporizadorId);
+      encerrarPorTempo();
+    }
+  }, 1000);
+  atualizarDisplay();
+}
+
+function atualizarDisplay() {
+  const m = Math.floor(estado.segundosRestantes / 60);
+  const s = estado.segundosRestantes % 60;
+  document.getElementById('tempo-display').textContent =
+    String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  const el = document.getElementById('cronometro');
+  el.className = 'cronometro';
+  if (estado.segundosRestantes <= 300) el.classList.add('aviso');
+  if (estado.segundosRestantes <= 60)  el.classList.add('critico');
+}
+
+function encerrarPorTempo() {
+  // Registra tentativa atual como está e encerra
+  registrarTentativa(0);
+  mostrarEncerrado(true);
+}
+
+// =====================================================
+// FLUXO PRINCIPAL
+// =====================================================
+document.getElementById('btn-comecar').addEventListener('click', () => {
+  const nome = document.getElementById('input-nome').value.trim();
+  const mat  = document.getElementById('input-matricula').value.trim();
+  if (!nome || !mat) { alert('Preencha nome e matrícula para continuar.'); return; }
+  estado.nome = nome;
+  estado.matricula = mat;
+  estado.iniciado = new Date();
+  iniciarCronometro();
+  iniciarTentativa();
+});
+
+function iniciarTentativa() {
+  estado.tentativaAtual++;
+  estado.questoesAtuais = gerarQuestoesTentativa();
+  estado.questaoIdx = 0;
+  estado.respostasSelecionadas = [];
+  mostrarTela('tela-questao');
+  renderQuestao();
+}
+
+function renderQuestao() {
+  const q = estado.questoesAtuais[estado.questaoIdx];
+  const total = estado.questoesPorTentativa;
+  const idx   = estado.questaoIdx;
+
+  estado.respondida = false;
+  document.getElementById('badge-tentativa').textContent = `Tentativa ${estado.tentativaAtual} de ${estado.maxTentativas}`;
+  document.getElementById('badge-questao').textContent   = `Questão ${idx + 1} de ${total}`;
+  document.getElementById('barra-label').textContent     = `${idx} de ${total} respondidas`;
+  document.getElementById('barra-fill').style.width      = `${(idx / total) * 100}%`;
+
+  const melhor = estado.tentativas.length > 0
+    ? Math.max(...estado.tentativas.map(t => t.nota))
+    : null;
+  document.getElementById('melhor-nota-label').textContent = melhor !== null ? `Melhor nota: ${melhor.toFixed(1)}` : '';
+
+  document.getElementById('enunciado').innerHTML = q.enunciado;
+  document.getElementById('pergunta').innerHTML  = q.pergunta;
+
+  // Código com lacuna destacada
+  const codigoFormatado = (q.codigo || '').replace(/___/g, '<span class="lacuna">___</span>');
+  document.getElementById('codigo').innerHTML = codigoFormatado;
+  document.getElementById('codigo').style.display = q.codigo ? 'block' : 'none';
+
+  // Alternativas embaralhadas mas mantendo índice original
+  const letras = ['A','B','C','D'];
+  const indicesEmbaralhados = embaralhar([0,1,2,3]);
+  const opcoes = document.getElementById('opcoes');
+  opcoes.innerHTML = '';
+
+  indicesEmbaralhados.forEach((idxOrig, pos) => {
+    const div = document.createElement('div');
+    div.className = 'opcao';
+    div.dataset.indiceOriginal = idxOrig;
+    div.innerHTML = `<div class="opcao-letra">${letras[pos]}</div><div class="opcao-text" style="font-size:14px;font-family:var(--mono)">${q.alternativas[idxOrig]}</div>`;
+    div.addEventListener('click', () => selecionarOpcao(div, idxOrig, q.correta));
+    opcoes.appendChild(div);
+  });
+
+  // Gabarito
+  const gabBox = document.getElementById('gabarito-box');
+  gabBox.style.display = 'none';
+  gabBox.className = 'gabarito-box';
+
+  // Botão próximo
+  const btn = document.getElementById('btn-proximo');
+  btn.textContent = 'Confirmar';
+  btn.disabled = true;
+  btn.onclick = confirmarResposta;
+
+  // Pontos de navegação
+  const nav = document.getElementById('nav-pontos');
+  nav.innerHTML = '';
+  for (let i = 0; i < total; i++) {
+    const d = document.createElement('div');
+    d.className = 'ponto' + (i < idx ? ' feito' : i === idx ? ' atual' : '');
+    nav.appendChild(d);
+  }
+}
+
+function selecionarOpcao(el, idxOrig, correta) {
+  if (estado.respondida) return;
+  document.querySelectorAll('.opcao').forEach(o => o.classList.remove('selecionada'));
+  el.classList.add('selecionada');
+  el.dataset.selecionado = idxOrig;
+  document.getElementById('btn-proximo').disabled = false;
+}
+
+function confirmarResposta() {
+  if (estado.respondida) return;
+  const selecionada = document.querySelector('.opcao.selecionada');
+  if (!selecionada) return;
+
+  estado.respondida = true;
+  const idxSelecionado = parseInt(selecionada.dataset.indiceOriginal);
+  const q = estado.questoesAtuais[estado.questaoIdx];
+  const acertou = idxSelecionado === q.correta;
+
+  estado.respostasSelecionadas.push({ questaoId: q.id, selecionada: idxSelecionado, correta: q.correta, acertou });
+
+  // Marcar opções
+  document.querySelectorAll('.opcao').forEach(op => {
+    const idx = parseInt(op.dataset.indiceOriginal);
+    if (idx === q.correta) op.classList.add('correta');
+    else if (idx === idxSelecionado && !acertou) op.classList.add('errada');
+    op.style.pointerEvents = 'none';
+  });
+
+  // Gabarito
+  const gabBox = document.getElementById('gabarito-box');
+  gabBox.style.display = 'block';
+  gabBox.className = 'gabarito-box ' + (acertou ? 'certo' : 'errado');
+  document.getElementById('gabarito-titulo').textContent = acertou ? '✓ Correto!' : '✗ Resposta errada';
+  document.getElementById('gabarito-texto').innerHTML = q.gabarito;
+
+  // Botão avançar
+  const btn = document.getElementById('btn-proximo');
+  const ultima = estado.questaoIdx === estado.questoesPorTentativa - 1;
+  btn.textContent = ultima ? 'Ver resultado →' : 'Próxima questão →';
+  btn.disabled = false;
+  btn.onclick = ultima ? finalizarTentativa : avancarQuestao;
+}
+
+function avancarQuestao() {
+  estado.questaoIdx++;
+  renderQuestao();
+}
+
+function finalizarTentativa() {
+  const acertos = estado.respostasSelecionadas.filter(r => r.acertou).length;
+  const nota = (acertos / estado.questoesPorTentativa) * 10;
+  registrarTentativa(nota);
+  mostrarResultado(acertos, nota);
+}
+
+function registrarTentativa(nota) {
+  estado.tentativas.push({
+    numero: estado.tentativaAtual,
+    acertos: estado.respostasSelecionadas.filter(r => r.acertou).length,
+    nota,
+    respostas: [...estado.respostasSelecionadas]
+  });
+}
+
+// =====================================================
+// TELA DE RESULTADO
+// =====================================================
+function mostrarResultado(acertos, nota) {
+  mostrarTela('tela-resultado');
+  document.getElementById('nota-atual').textContent = nota.toFixed(1);
+  document.getElementById('nota-label').textContent = `Tentativa ${estado.tentativaAtual} — ${acertos} de ${estado.questoesPorTentativa} acertos`;
+
+  const melhor = Math.max(...estado.tentativas.map(t => t.nota));
+  const tbody = document.getElementById('tbody-tentativas');
+  tbody.innerHTML = '';
+  estado.tentativas.forEach(t => {
+    const tr = document.createElement('tr');
+    if (t.nota === melhor) tr.className = 'melhor';
+    tr.innerHTML = `<td>Tentativa ${t.numero}</td><td>${t.acertos}/${estado.questoesPorTentativa}</td><td>${t.nota.toFixed(1)}</td>`;
+    tbody.appendChild(tr);
+  });
+
+  const btns = document.getElementById('btns-resultado');
+  btns.innerHTML = '';
+  const tentativasRestantes = estado.maxTentativas - estado.tentativaAtual;
+
+  if (tentativasRestantes > 0) {
+    const btnNova = document.createElement('button');
+    btnNova.className = 'btn btn-secundario';
+    btnNova.textContent = `Nova tentativa (${tentativasRestantes} restante${tentativasRestantes > 1 ? 's' : ''})`;
+    btnNova.onclick = iniciarTentativa;
+    btns.appendChild(btnNova);
+  }
+
+  const btnEncerrar = document.createElement('button');
+  btnEncerrar.className = 'btn btn-verde';
+  btnEncerrar.textContent = 'Encerrar e enviar resultado';
+  btnEncerrar.onclick = () => enviarResultado();
+  btns.appendChild(btnEncerrar);
+}
+
+// =====================================================
+// ENVIO DE RESULTADO
+// =====================================================
+async function enviarResultado() {
+  if (estado.temporizadorId) clearInterval(estado.temporizadorId);
+
+  // Feedback visual imediato
+  const btn = document.querySelector('#btns-resultado .btn-verde');
+  if (btn) { btn.textContent = 'Enviando...'; btn.disabled = true; }
+
+  const melhorNota = Math.max(...estado.tentativas.map(t => t.nota));
+  const payload = {
+    nome: estado.nome,
+    matricula: estado.matricula,
+    data: new Date().toLocaleString('pt-BR'),
+    totalTentativas: estado.tentativas.length,
+    melhorNota: melhorNota.toFixed(1),
+    tentativas: estado.tentativas.map(t => ({
+      numero: t.numero,
+      acertos: t.acertos,
+      nota: t.nota.toFixed(1)
+    }))
+  };
+
+  console.log('Enviando resultado:', payload);
+  console.log('Modo:', estado.emCasa ? 'casa (Formspree)' : 'escola (servidor local)');
+
+  let ok = false;
+  if (estado.emCasa) {
+    ok = await enviarFormspree(payload);
+  } else {
+    ok = await enviarServidor(payload);
+  }
+
+  console.log('Envio:', ok ? 'sucesso' : 'falhou');
+  mostrarEncerrado(false, melhorNota, ok);
+}
+
+async function enviarServidor(payload) {
+  try {
+    const resp = await fetch('/resultado', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    return resp.ok;
+  } catch(e) {
+    console.warn('Servidor local indisponível:', e);
+    return false;
+  }
+}
+
+async function enviarFormspree(payload) {
+  const FORMSPREE_ID = 'SEU_ID_FORMSPREE'; // substituir após configurar
+  try {
+    const resp = await fetch(`https://formspree.io/f/${FORMSPREE_ID}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    return resp.ok;
+  } catch(e) {
+    console.warn('Erro ao enviar para Formspree:', e);
+    return false;
+  }
+}
+
+// =====================================================
+// TELA ENCERRADO
+// =====================================================
+function mostrarEncerrado(porTempo, melhorNota, envioOk) {
+  mostrarTela('tela-encerrado');
+  if (porTempo) {
+    document.getElementById('encerrado-msg').innerHTML =
+      'O tempo acabou. Seu resultado foi registrado automaticamente.<br>Você pode continuar em casa até amanhã.';
+  } else if (envioOk === false) {
+    document.getElementById('encerrado-msg').innerHTML =
+      `Sua maior nota foi <strong>${melhorNota?.toFixed(1) ?? '—'}</strong>.<br>
+       <span style="color:#DC2626">⚠ Não foi possível enviar ao servidor. Avise o professor.</span>`;
+  } else {
+    document.getElementById('encerrado-msg').innerHTML =
+      `Sua maior nota foi <strong>${melhorNota?.toFixed(1) ?? '—'}</strong>.<br>Resultado enviado ao professor. Obrigado!`;
+  }
+
+  // Tabela resumo
+  const div = document.getElementById('encerrado-tabela');
+  const melhor = estado.tentativas.length > 0 ? Math.max(...estado.tentativas.map(t => t.nota)) : 0;
+  let html = `<table class="tabela-tentativas"><thead><tr><th>Tentativa</th><th>Acertos</th><th>Nota</th></tr></thead><tbody>`;
+  estado.tentativas.forEach(t => {
+    const dest = t.nota === melhor ? ' class="melhor"' : '';
+    html += `<tr${dest}><td>Tentativa ${t.numero}</td><td>${t.acertos}/${estado.questoesPorTentativa}</td><td>${t.nota.toFixed(1)}</td></tr>`;
+  });
+  html += `</tbody></table>`;
+  div.innerHTML = html;
+}
+</script>
+</body>
+</html>
