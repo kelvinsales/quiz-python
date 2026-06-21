@@ -492,7 +492,16 @@ function embaralhar(arr) {
 }
 
 function sortearSemRepetir(pool, usadas, n) {
-  const disponiveis = pool.filter(q => !usadas.includes(q.id));
+  let disponiveis = pool.filter(q => !usadas.includes(q.id));
+
+  // Se não houver questões suficientes, libera as já usadas
+  // (exceto as da tentativa atual, guardadas em usadasNestaTentativa)
+  if (disponiveis.length < n) {
+    // Limpa o histórico e recomeça do zero
+    usadas.length = 0;
+    disponiveis = [...pool];
+  }
+
   const escolhidas = embaralhar(disponiveis).slice(0, n);
   escolhidas.forEach(q => usadas.push(q.id));
   return escolhidas;
@@ -562,9 +571,10 @@ window.addEventListener('load', () => { if (estado.emCasa) verificarPrazo(); });
 
 function iniciarTentativa() {
   estado.tentativaAtual++;
-  estado.questoesAtuais = gerarQuestoesTentativa();
   estado.questaoIdx = 0;
+  estado.respondida = false;
   estado.respostasSelecionadas = [];
+  estado.questoesAtuais = gerarQuestoesTentativa();
   mostrarTela('tela-questao');
   renderQuestao();
 }
