@@ -804,18 +804,47 @@ function montarPayload(payload, status) {
   return JSON.stringify({ ...payload, status });
 }
 
+async function enviarParaSheets(payload, status) {
+  // Apps Script requer no-cors para requisições externas
+  // Usamos um iframe invisível como fallback confiável
+  return new Promise((resolve) => {
+    try {
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = SHEETS_URL;
+      form.target = 'iframe-envio';
+      form.style.display = 'none';
+
+      const campo = document.createElement('input');
+      campo.type = 'hidden';
+      campo.name = 'payload';
+      campo.value = montarPayload(payload, status);
+      form.appendChild(campo);
+
+      let iframe = document.getElementById('iframe-envio');
+      if (!iframe) {
+        iframe = document.createElement('iframe');
+        iframe.name = 'iframe-envio';
+        iframe.id = 'iframe-envio';
+        iframe.style.display = 'none';
+        document.body.appendChild(iframe);
+      }
+
+      document.body.appendChild(form);
+      form.submit();
+      document.body.removeChild(form);
+
+      // Aguarda 2s e considera enviado
+      setTimeout(() => resolve(true), 2000);
+    } catch(e) {
+      console.warn('Erro ao enviar:', e);
+      resolve(false);
+    }
+  });
+}
+
 async function enviarFormspree(payload) {
-  try {
-    const resp = await fetch(SHEETS_URL, {
-      method: 'POST',
-      body: montarPayload(payload, 'final')
-    });
-    const data = await resp.json();
-    return data.ok === true;
-  } catch(e) {
-    console.warn('Erro ao enviar para Google Sheets:', e);
-    return false;
-  }
+  return await enviarParaSheets(payload, 'final');
 }
 
 async function enviarParcialFormspree() {
@@ -831,10 +860,7 @@ async function enviarParcialFormspree() {
         numero: t.numero, acertos: t.acertos, nota: t.nota.toFixed(1)
       }))
     };
-    await fetch(SHEETS_URL, {
-      method: 'POST',
-      body: montarPayload(payload, 'parcial')
-    });
+    await enviarParaSheets(payload, 'parcial');
   } catch(e) {
     console.warn('Envio parcial falhou:', e);
   }
