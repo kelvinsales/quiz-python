@@ -805,37 +805,20 @@ function montarPayload(payload, status) {
 }
 
 async function enviarParaSheets(payload, status) {
-  // Apps Script requer no-cors para requisições externas
-  // Usamos um iframe invisível como fallback confiável
+  // Envia via GET com dados na URL — contorna bloqueio CORS do Apps Script
   return new Promise((resolve) => {
     try {
-      const form = document.createElement('form');
-      form.method = 'POST';
-      form.action = SHEETS_URL;
-      form.target = 'iframe-envio';
-      form.style.display = 'none';
+      const dados = encodeURIComponent(JSON.stringify({ ...payload, status }));
+      const url   = SHEETS_URL + '?dados=' + dados;
 
-      const campo = document.createElement('input');
-      campo.type = 'hidden';
-      campo.name = 'payload';
-      campo.value = montarPayload(payload, status);
-      form.appendChild(campo);
+      // Usa imagem invisível para disparar o GET sem restrição de CORS
+      const img = new Image();
+      img.onload  = () => resolve(true);
+      img.onerror = () => resolve(true); // Apps Script retorna JSON, não imagem — onerror é esperado
+      img.src = url;
 
-      let iframe = document.getElementById('iframe-envio');
-      if (!iframe) {
-        iframe = document.createElement('iframe');
-        iframe.name = 'iframe-envio';
-        iframe.id = 'iframe-envio';
-        iframe.style.display = 'none';
-        document.body.appendChild(iframe);
-      }
-
-      document.body.appendChild(form);
-      form.submit();
-      document.body.removeChild(form);
-
-      // Aguarda 2s e considera enviado
-      setTimeout(() => resolve(true), 2000);
+      // Garante resolução após 3s mesmo sem resposta
+      setTimeout(() => resolve(true), 3000);
     } catch(e) {
       console.warn('Erro ao enviar:', e);
       resolve(false);
