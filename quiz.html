@@ -452,7 +452,7 @@ estado.emCasa = !(location.hostname === 'localhost' || location.hostname === '12
 // PRAZO PARA USO EM CASA
 // Atualize a data após cada aula: 'YYYY-MM-DDTHH:MM'
 // =====================================================
-const PRAZO_CASA = '2026-06-29T12:30';
+const PRAZO_CASA = '2026-06-29T18:30';
 
 function verificarPrazo() {
   if (!estado.emCasa) return true;
@@ -660,7 +660,7 @@ function confirmarResposta() {
   estado.respostasSelecionadas.push({ questaoId: q.id, selecionada: idxSelecionado, correta: q.correta, acertou });
 
   // Marcar opções
-  document.querySelectorAll('.opcao').forEach(op => {
+  document.querySelectorAll('.opcao').forEach(op => {quiz.
     const idx = parseInt(op.dataset.indiceOriginal);
     if (idx === q.correta) op.classList.add('correta');
     else if (idx === idxSelecionado && !acertou) op.classList.add('errada');
